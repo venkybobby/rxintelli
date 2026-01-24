@@ -5,5 +5,7 @@ pandas
 asyncio
 langchain
 langchain-openai
+langchain-ollama
 langgraph
 openai
+requests
