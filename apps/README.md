@@ -23,3 +23,10 @@ This application allows you to connect to a SQL database and generate SQL querie
 
 ![SQL Database App](../img/apps/ai_sql_database_app.jpg)
 
+## RxIntelli – Prescription Processing Prototype
+
+Next.js app for prescription intake and control-tower oversight. **Intake**: multi-channel entry (upload image/PDF, eRx import, manual form) with HIPAA-oriented UX and AI OCR preview. **Control Tower**: metrics, search/filters, prescription table with status badges, expandable timeline, and role-based views (Admin / RPh / Patient). Includes mock data and simulated real-time status updates.
+
+- **Run**: `cd apps/rxintelli-app && npm install && npm run dev` → [http://localhost:3000](http://localhost:3000)
+- **Docs**: `apps/rxintelli-app/README.md`
+

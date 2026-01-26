@@ -14,6 +14,7 @@ import sqlalchemy as sql
 import pandas as pd
 import asyncio
 import inspect
+import os
 from pathlib import Path
 
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
@@ -38,8 +39,10 @@ DB_OPTIONS = {
 }
 
 OPENAI_MODEL_LIST = ['gpt-4o-mini', 'gpt-4o']
-OLLAMA_DEFAULT_MODEL = 'llama3.1:8b'
-OLLAMA_DEFAULT_URL = 'http://localhost:11434'
+OLLAMA_DEFAULT_MODEL = 'llama3.1:8b'  # Ollama model name
+OLLAMA_DEFAULT_URL = 'https://ollama.example.com'  # Cloud Ollama endpoint (replace with your cloud Ollama URL)
+# API Key: Can be set via environment variable TOGETHER_API_KEY or will use default below
+OLLAMA_DEFAULT_API_KEY = os.getenv('TOGETHER_API_KEY', '6b952b82b5744b9bacdb337e46d4e6e5.n_aRTVbEhiyHJR4I7EGLImCT')
 
 TITLE = "Your SQL Database Agent"
 
@@ -85,8 +88,11 @@ llm_provider = st.sidebar.selectbox(
     "Choose LLM Provider",
     ["OpenAI", "Ollama"],
     index=0,
-    help="Choose OpenAI (cloud) or Ollama (local)."
+    help="OpenAI: Cloud GPT models | Ollama: Local Ollama or Cloud Llama (Together AI, Groq, etc.)"
 )
+
+# Initialize llm as None
+llm = None
 
 # * OpenAI Configuration
 if llm_provider == "OpenAI":
@@ -113,30 +119,29 @@ if llm_provider == "OpenAI":
             st.error(f"Invalid API Key: {e}")
     else:
         st.info("Please enter your OpenAI API Key to proceed.")
-        st.stop()
-    
-    # OpenAI Model Selection
-    model_option = st.sidebar.selectbox(
-        "Choose OpenAI model",
-        OPENAI_MODEL_LIST,
-        index=0,
-        key="openai_model_select"
-    )
-    
-    llm = ChatOpenAI(
-        model=model_option,
-        api_key=st.session_state["OPENAI_API_KEY"]
-    )
-
-# * Ollama Configuration
-else:  # Ollama
-    if ChatOllama is None:
-        st.sidebar.error(
-            "Ollama support requires `langchain-ollama`. Install it with `pip install langchain-ollama`."
+        llm = None
+    # OpenAI Model Selection (only show if API key is provided)
+    if st.session_state["OPENAI_API_KEY"]:
+        model_option = st.sidebar.selectbox(
+            "Choose OpenAI model",
+            OPENAI_MODEL_LIST,
+            index=0,
+            key="openai_model_select"
         )
-        st.stop()
-    
-    st.sidebar.header("Ollama Configuration")
+        
+        try:
+            llm = ChatOpenAI(
+                model=model_option,
+                api_key=st.session_state["OPENAI_API_KEY"]
+            )
+            st.session_state.llm_changed = True
+        except Exception as e:
+            st.sidebar.error(f"Error creating OpenAI LLM: {e}")
+            llm = None
+
+# * Ollama Configuration (Local or Cloud)
+else:  # Ollama
+    st.sidebar.header("Ollama / Cloud Llama Configuration")
     
     default_ollama_url = (
         st.session_state.get("ollama_base_url") or OLLAMA_DEFAULT_URL
@@ -145,59 +150,121 @@ else:  # Ollama
         st.session_state.get("ollama_model") or OLLAMA_DEFAULT_MODEL
     )
     
-    ollama_base_url = st.sidebar.text_input(
-        "Ollama base URL",
+        ollama_base_url = st.sidebar.text_input(
+        "Base URL",
         value=default_ollama_url,
         key="ollama_base_url_input",
-        help="Usually `http://localhost:11434`.",
+        help="Cloud Ollama URL (e.g., `https://ollama.example.com`) or local URL (e.g., `http://localhost:11434`).",
     ).strip()
     
-    ollama_model = st.sidebar.text_input(
-        "Ollama model",
+        ollama_model = st.sidebar.text_input(
+        "Model name",
         value=default_ollama_model,
         key="ollama_model_input",
-        help="Example: `llama3.1:8b` (run `ollama list` to see what's installed).",
+        help="Ollama model name (e.g., `llama3.1:8b`, `mistral`, `codellama`, etc.).",
     ).strip()
+    
+    # Check if using cloud (remote) or local (localhost)
+    # Cloud Ollama: remote URL (not localhost)
+    # Local Ollama: localhost
+    is_cloud = "localhost" not in ollama_base_url.lower() and "127.0.0.1" not in ollama_base_url.lower()
+    
+    # API Key may be required for cloud Ollama (if authentication is enabled)
+    ollama_api_key = None
+    if is_cloud:
+        # Optional API key for cloud Ollama (if your instance requires authentication)
+        default_api_key = (
+            st.session_state.get("ollama_api_key") 
+            or os.getenv('OLLAMA_API_KEY', '')
+        )
+        ollama_api_key = st.sidebar.text_input(
+            "API Key (optional)",
+            value=default_api_key if default_api_key else "",
+            type="password",
+            key="ollama_api_key_input",
+            help="Optional API key if your cloud Ollama instance requires authentication.",
+        ).strip()
+        st.session_state["ollama_api_key"] = ollama_api_key
     
     st.session_state["ollama_base_url"] = ollama_base_url
     st.session_state["ollama_model"] = ollama_model
     
+    # Show current configuration status
+    if is_cloud:
+        st.sidebar.info(f"🌐 **Cloud Mode**: Using Cloud Ollama\n📍 URL: `{ollama_base_url}`")
+    else:
+        st.sidebar.info(f"💻 **Local Mode**: Using Local Ollama\n📍 URL: `{ollama_base_url}`")
+    
     if not ollama_model:
-        st.sidebar.error("Ollama model name is required.")
-        st.stop()
-    
-    # Create Ollama LLM
-    kwargs: dict[str, object] = {"model": ollama_model}
-    base_url = ollama_base_url.strip()
-    if base_url:
+        st.sidebar.error("Model name is required.")
+        llm = None
+    else:
+        # Create LLM - use ChatOllama for both cloud and local Ollama (same API format)
         try:
-            sig = inspect.signature(ChatOllama)
-            if "base_url" in sig.parameters:
-                kwargs["base_url"] = base_url
-            elif "ollama_base_url" in sig.parameters:
-                kwargs["ollama_base_url"] = base_url
-        except Exception:
-            kwargs["base_url"] = base_url
+            if ChatOllama is None:
+                st.sidebar.error(
+                    "Ollama requires `langchain-ollama`. Install with `pip install langchain-ollama`."
+                )
+                llm = None
+            else:
+                kwargs: dict[str, object] = {"model": ollama_model}
+                base_url = ollama_base_url.strip()
+                if base_url:
+                    try:
+                        sig = inspect.signature(ChatOllama)
+                        if "base_url" in sig.parameters:
+                            kwargs["base_url"] = base_url
+                        elif "ollama_base_url" in sig.parameters:
+                            kwargs["ollama_base_url"] = base_url
+                    except Exception:
+                        kwargs["base_url"] = base_url
+                
+                # Add API key if provided (for authenticated cloud Ollama instances)
+                if ollama_api_key and is_cloud:
+                    # Some cloud Ollama instances may support API key authentication
+                    # Check if ChatOllama supports headers or api_key parameter
+                    try:
+                        sig = inspect.signature(ChatOllama)
+                        if "headers" in sig.parameters:
+                            kwargs["headers"] = {"Authorization": f"Bearer {ollama_api_key}"}
+                    except Exception:
+                        pass  # API key not supported, continue without it
+                
+                llm = ChatOllama(**kwargs)
+                st.session_state.llm_changed = True
+                if is_cloud:
+                    st.sidebar.success(f"✓ Connected to cloud Ollama")
+                else:
+                    st.sidebar.success(f"✓ Connected to local Ollama")
+        except Exception as e:
+            st.sidebar.error(f"Error creating LLM: {e}")
+            llm = None
     
-    llm = ChatOllama(**kwargs)
-    
-    # Optional: Test Ollama connection
-    if st.sidebar.button("Test Ollama connection", key="ollama_test"):
+    # Optional: Test connection
+    if st.sidebar.button("Test connection", key="ollama_test"):
         try:
             import requests
+            # Test Ollama API endpoint (same for both cloud and local)
             url = f"{ollama_base_url.rstrip('/')}/api/tags"
-            response = requests.get(url, timeout=5)
+            headers = {}
+            if ollama_api_key and is_cloud:
+                headers["Authorization"] = f"Bearer {ollama_api_key}"
+            response = requests.get(url, headers=headers, timeout=5)
             if response.status_code == 200:
                 models_data = response.json()
                 if models_data.get("models"):
-                    st.sidebar.success(f"Connected! Found {len(models_data['models'])} model(s).")
+                    mode = "cloud" if is_cloud else "local"
+                    st.sidebar.success(f"Connected to {mode} Ollama! Found {len(models_data['models'])} model(s).")
                 else:
-                    st.sidebar.warning("Connected, but no models were returned. Run `ollama list` to confirm.")
+                    st.sidebar.warning("Connected, but no models were returned.")
             else:
                 st.sidebar.error(f"Ollama returned status code {response.status_code}")
         except Exception as e:
-            st.sidebar.error(f"Could not connect to Ollama at `{ollama_base_url}`: {e}")
-            st.sidebar.info("Tip: start Ollama with `ollama serve` and pull a model with `ollama pull <model>`.")
+            st.sidebar.error(f"Could not connect: {e}")
+            if not is_cloud:
+                st.sidebar.info("Tip: start Ollama with `ollama serve` and pull a model with `ollama pull <model>`.")
+            else:
+                st.sidebar.info("Tip: Make sure your cloud Ollama instance is accessible and the URL is correct.")
 
 # * STREAMLIT 
 
@@ -223,21 +290,34 @@ def display_chat_history():
 # Render current messages from StreamlitChatMessageHistory
 display_chat_history()
 
-# Create the SQL Database Agent
-sql_db_agent = SQLDatabaseAgent(
-    model = llm,
-    connection=conn,
-    n_samples=1,
-    log = False,
-    bypass_recommended_steps=True,
-)
+# Initialize SQL Database Agent in session state (only create once)
+if "sql_db_agent" not in st.session_state:
+    st.session_state.sql_db_agent = None
+
+# Create or update the SQL Database Agent only if LLM is configured
+if llm is not None:
+    if st.session_state.sql_db_agent is None or st.session_state.get("llm_changed", False):
+        try:
+            st.session_state.sql_db_agent = SQLDatabaseAgent(
+                model=llm,
+                connection=conn,
+                n_samples=1,
+                log=False,
+                bypass_recommended_steps=True,
+            )
+            st.session_state.llm_changed = False
+        except Exception as e:
+            st.error(f"Error creating SQL Database Agent: {e}")
+            st.session_state.sql_db_agent = None
 
 # Handle the question async
 async def handle_question(question):
-    await sql_db_agent.ainvoke_agent(
+    if st.session_state.sql_db_agent is None:
+        raise ValueError("SQL Database Agent not initialized. Please configure your LLM provider.")
+    await st.session_state.sql_db_agent.ainvoke_agent(
         user_instructions=question,
     )
-    return sql_db_agent
+    return st.session_state.sql_db_agent
 
 
 if st.session_state["PATH_DB"] and (question := st.chat_input("Enter your question here:", key="query_input")):
@@ -249,8 +329,9 @@ if st.session_state["PATH_DB"] and (question := st.chat_input("Enter your questi
             st.stop()
     elif llm_provider == "Ollama":
         if not st.session_state.get("ollama_model"):
-            st.error("Please enter an Ollama model name to proceed.")
+            st.error("Please enter a model name to proceed.")
             st.stop()
+        # Note: API key is optional for cloud Ollama (only if authentication is required)
     
     with st.spinner("Thinking..."):
         
