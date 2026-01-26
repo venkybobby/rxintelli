@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rx-primary: #0d9488;
+  --rx-primary-dark: #0f766e;
+  --rx-teal: #14b8a6;
+  --rx-blue: #0891b2;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+@layer base {
+  * {
+    @apply border-slate-200;
+  }
+}
+
+/* Control Tower: highlight recently updated rows (yellow fade-out) */
+tr.updated {
+  animation: row-updated 2.5s ease-out forwards;
+}
+@keyframes row-updated {
+  0% {
+    background-color: rgb(254 249 195); /* amber-100 */
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Toast slide-in */
+.toast-item {
+  animation: toast-in 0.25s ease-out;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
