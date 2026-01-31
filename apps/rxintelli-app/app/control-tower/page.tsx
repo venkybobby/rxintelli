@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -115,7 +115,7 @@ function formatTime(iso: string) {
   }
 }
 
-export default function ControlTowerPage() {
+function ControlTowerPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -180,7 +180,11 @@ export default function ControlTowerPage() {
         }
         changed.forEach(({ id, status }) => {
           toast(`Rx ${id} advanced to ${status}`);
-          setUpdatedIds((u) => new Set([...u, id]));
+          setUpdatedIds((u) => {
+            const next = new Set(u);
+            next.add(id);
+            return next;
+          });
           setTimeout(() => {
             setUpdatedIds((u) => {
               const next = new Set(u);
@@ -513,5 +517,17 @@ export default function ControlTowerPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ControlTowerPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <ControlTowerPageContent />
+    </Suspense>
   );
 }

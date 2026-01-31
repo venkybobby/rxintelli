@@ -89,23 +89,35 @@ Intake submit → `createRx` → navigate to `/verification?rxId=...`. Control T
 
 ## Deployment
 
-### Vercel (Recommended)
+### 🎯 **START HERE: Step-by-Step Guide**
 
-See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed deployment instructions.
+**👉 [STEP_BY_STEP_DEPLOY.md](./STEP_BY_STEP_DEPLOY.md) - Follow these exact steps!**
 
-Quick start:
-1. Push code to GitHub/GitLab/Bitbucket
-2. Import project in [Vercel Dashboard](https://vercel.com/new)
-3. Set root directory to `apps/rxintelli-app`
-4. Add environment variables:
-   - `NEXTAUTH_SECRET` (generate with `openssl rand -base64 32`)
-   - `NEXTAUTH_URL` (your Vercel app URL)
-5. Deploy
+This is the easiest guide with copy-paste commands and detailed explanations.
 
-The app is configured with:
-- Proper URL resolution using Vercel environment variables (`lib/config.ts`)
-- Optimized Next.js config for Vercel
-- Environment variable examples (`.env.example`)
+### 📚 Other Deployment Guides
+
+- **[STEP_BY_STEP_DEPLOY.md](./STEP_BY_STEP_DEPLOY.md)** ⭐ **START HERE** - Detailed step-by-step with exact commands
+- **[DEPLOY_NOW.md](./DEPLOY_NOW.md)** - Quick 3-step summary
+- **[DEPLOY_WITHOUT_GIT.md](./DEPLOY_WITHOUT_GIT.md)** - All options without Git
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Complete guide for all platforms
+- **[QUICK_DEPLOY.md](./QUICK_DEPLOY.md)** - Quick reference guide
+
+### Recommended Platforms:
+
+1. **Netlify Drop** (Easiest, no Git) - See [DEPLOY_NOW.md](./DEPLOY_NOW.md)
+2. **Netlify with Git** - See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md#-option-1-netlify-easiest-alternative-to-vercel)
+3. **Railway** - See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md#-option-2-railway-great-for-full-stack-apps)
+4. **Render** - See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md#-option-3-render-simple--reliable)
+5. **Vercel** - See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)
+6. **Docker** - See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md#-option-4-docker--any-platform)
+
+### Required Environment Variables:
+
+- `NEXTAUTH_SECRET` - Generate with: `openssl rand -base64 32`
+- `NEXTAUTH_URL` - Your deployment URL (set after first deploy)
+
+**Note**: Configuration files are included for Netlify, Render, Vercel, and Docker. See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for details.
 
 ## Next steps
 

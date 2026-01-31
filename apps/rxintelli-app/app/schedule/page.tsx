@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { format, addDays, startOfDay, isBefore } from "date-fns";
 import { Stepper } from "@/components/stepper";
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,7 @@ function getCopayPaid(rx: Rx): number {
   return 0;
 }
 
-export default function SchedulePage() {
+function SchedulePageContent() {
   const searchParams = useSearchParams();
   const rxId = searchParams.get("rxId");
   const { toast } = useToast();
@@ -129,7 +129,7 @@ export default function SchedulePage() {
         setSelectedSlot(null);
       })
       .finally(() => setSlotsLoading(false));
-  }, [rx?.rxId]);
+  }, [rx, rx?.rxId]);
 
   const copayPaid = rx ? getCopayPaid(rx) : 0;
   const drugLabel = rx
@@ -444,5 +444,18 @@ export default function SchedulePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SchedulePage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+        <Stepper current="Schedule" className="mb-8" />
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <SchedulePageContent />
+    </Suspense>
   );
 }

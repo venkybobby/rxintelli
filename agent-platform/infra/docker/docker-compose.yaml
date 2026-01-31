@@ -1,0 +1,75 @@
+version: "3.9"
+
+services:
+  agent-api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+    container_name: agent-api
+    environment:
+      NODE_ENV: "production"
+      PORT: "3000"
+
+      # OpenTelemetry SDK config
+      OTEL_SERVICE_NAME: "agent-api"
+      OTEL_TRACES_EXPORTER: "otlp"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+
+      # Resource attributes (optional, useful for filtering)
+      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=agent-platform,deployment.environment=local"
+
+    ports:
+      - "3000:3000"
+    depends_on:
+      - otel-collector
+    networks:
+      - agentnet
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.97.0
+    container_name: otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ../otel/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      # OTLP HTTP receiver
+      - "4318:4318"
+      # Collector metrics (Prometheus exporter endpoint)
+      - "8889:8889"
+      # Health check (optional)
+      - "13133:13133"
+    depends_on:
+      - jaeger
+    networks:
+      - agentnet
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    container_name: jaeger
+    ports:
+      # Jaeger UI
+      - "16686:16686"
+      # Jaeger OTLP gRPC ingest (Collector will export here)
+      - "4317:4317"
+    networks:
+      - agentnet
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - agent-api
+      - otel-collector
+    networks:
+      - agentnet
+
+networks:
+  agentnet:
+    driver: bridge

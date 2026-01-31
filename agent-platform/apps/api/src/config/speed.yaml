@@ -1,0 +1,5 @@
+# Speed optimization and caching TTLs (seconds)
+cache:
+  rules_decision_ttl: 300
+  eligibility_ttl: 600
+  auth_status_ttl: 300
