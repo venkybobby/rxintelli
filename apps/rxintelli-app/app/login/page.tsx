@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -16,7 +16,7 @@ const EMAIL_TO_ROLE: Record<string, string> = {
   "admin@rx.com": "Admin",
 };
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -107,5 +107,17 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto flex min-h-[60vh] max-w-sm flex-col justify-center px-4 py-12">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }

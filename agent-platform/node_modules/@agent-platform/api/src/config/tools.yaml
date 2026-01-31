@@ -1,0 +1,8 @@
+# Tool broker configuration (simulated latency in ms)
+tools:
+  eligibility_check_270_271:
+    simulated_latency_ms: 50
+  auth_status_lookup:
+    simulated_latency_ms: 30
+  policy_kb_lookup:
+    simulated_latency_ms: 20

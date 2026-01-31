@@ -1,0 +1,25 @@
+{
+  "name": "@agent-platform/shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "prom-client": "^15.1.0",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
+    "@opentelemetry/sdk-node": "^0.52.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.47.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.52.0",
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/resources": "^1.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3"
+  }
+}

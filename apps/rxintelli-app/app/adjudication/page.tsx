@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { Stepper } from "@/components/stepper";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ function getEstimatedTotal(rx: Rx): number {
   return Math.round(base + qty / 5 + tier * 8);
 }
 
-export default function AdjudicationPage() {
+function AdjudicationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const rxId = searchParams.get("rxId");
@@ -538,5 +538,18 @@ export default function AdjudicationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdjudicationPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+        <Stepper current="Adjudication" className="mb-8" />
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <AdjudicationPageContent />
+    </Suspense>
   );
 }

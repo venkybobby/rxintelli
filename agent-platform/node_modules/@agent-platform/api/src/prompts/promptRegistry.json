@@ -1,0 +1,11 @@
+{
+  "scheduling_auth": {
+    "templates": {
+      "schedule_ok": "Proceed with scheduling. No prior authorization required.",
+      "auth_required": "Prior authorization required before scheduling. Please obtain authorization.",
+      "docs_missing": "Required documentation is missing. Please provide: {missing_fields}.",
+      "human_review": "This case requires human review. A specialist will follow up."
+    },
+    "fallback": "Please contact the scheduling team for assistance."
+  }
+}

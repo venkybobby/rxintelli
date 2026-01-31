@@ -1,0 +1,36 @@
+═══════════════════════════════════════
+          PRESCRIPTION
+═══════════════════════════════════════
+
+PATIENT INFORMATION
+───────────────────
+Name: John Doe
+Date of Birth: January 15, 1980
+Patient ID: PAT-12345
+Gender: Male
+
+PHYSICIAN INFORMATION
+─────────────────────
+Name: Dr. Jane Smith, MD
+NPI: 1234567890
+License: TX-12345
+
+PRESCRIPTION DETAILS
+───────────────────
+Drug Name: Lisinopril
+Strength: 10mg
+Dosage Form: Tablet
+Quantity: 30 tablets
+Refills: 0
+
+SIG (Instructions):
+Take 1 tablet by mouth once daily
+for hypertension
+
+INDICATION: Hypertension
+DAYS SUPPLY: 30
+
+═══════════════════════════════════════
+Date: January 25, 2026
+Prescriber Signature: [Dr. Jane Smith]
+═══════════════════════════════════════

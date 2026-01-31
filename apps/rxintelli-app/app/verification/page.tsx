@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +33,7 @@ type DraftRpe = {
   daysSupply: number;
 };
 
-export default function VerificationPage() {
+function VerificationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const rxId = searchParams.get("rxId");
@@ -398,6 +398,18 @@ export default function VerificationPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerificationPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <VerificationPageContent />
+    </Suspense>
   );
 }
 

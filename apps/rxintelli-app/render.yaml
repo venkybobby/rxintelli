@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: rxintelli-app
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        sync: false  # Set manually after first deploy

@@ -1,0 +1,9 @@
+# A/B experiment configuration
+# EXP-A2: conditional waiting - control waits for all tools, treatment proceeds early on decisive rule
+experiments:
+  - experiment_id: "EXP-A2"
+    enabled: true
+    case_types:
+      - "scheduling_auth"
+    control_bucket_end: 50
+    treatment_bucket_end: 100

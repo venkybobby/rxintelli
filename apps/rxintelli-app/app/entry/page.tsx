@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useOverrideRole } from "@/contexts/override-role-context";
 import { Stepper } from "@/components/stepper";
@@ -44,7 +44,7 @@ const defaultForm = (rx: Rx): FormState => ({
   daysSupply: rx.prescriptionDetails.rpeElements?.daysSupply ?? 0,
 });
 
-export default function EntryPage() {
+function EntryPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const rxId = searchParams.get("rxId");
@@ -594,5 +594,18 @@ export default function EntryPage() {
         </DialogFooter>
       </Dialog>
     </div>
+  );
+}
+
+export default function EntryPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+        <Stepper current="Entry" className="mb-8" />
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <EntryPageContent />
+    </Suspense>
   );
 }
