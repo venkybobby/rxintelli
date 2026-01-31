@@ -53,10 +53,11 @@ router.post('/run', async (req: Request, res: Response): Promise<void> => {
     const verified = verifyResponse(tenantId, request.case_id, rawResponse);
     res.json(verified);
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     logger.error({ err, tenantId, case_id: request.case_id }, 'Agent run failed');
     res.status(500).json({
       error: 'agent_error',
-      message: 'Agent execution failed',
+      message: process.env.NODE_ENV !== 'production' ? message : 'Agent execution failed',
     });
   }
 });
