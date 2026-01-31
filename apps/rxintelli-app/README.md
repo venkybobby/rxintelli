@@ -87,6 +87,26 @@ Intake submit → `createRx` → navigate to `/verification?rxId=...`. Control T
 
 `validateRx(rx)` returns per-section results (Patient, Physician, Drug, RPE) with status Pass/Fail, overall score (0–100), and issues. Each section scores 25; threshold for "Proceed to Entry" is `VERIFICATION_THRESHOLD` (default 80). On save, mock updates: Patient eligibility set when name+id present; Physician `verified` set when NPI is 10 digits.
 
+## Deployment
+
+### Vercel (Recommended)
+
+See [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for detailed deployment instructions.
+
+Quick start:
+1. Push code to GitHub/GitLab/Bitbucket
+2. Import project in [Vercel Dashboard](https://vercel.com/new)
+3. Set root directory to `apps/rxintelli-app`
+4. Add environment variables:
+   - `NEXTAUTH_SECRET` (generate with `openssl rand -base64 32`)
+   - `NEXTAUTH_URL` (your Vercel app URL)
+5. Deploy
+
+The app is configured with:
+- Proper URL resolution using Vercel environment variables (`lib/config.ts`)
+- Optimized Next.js config for Vercel
+- Environment variable examples (`.env.example`)
+
 ## Next steps
 
 1. Implement full Schedule page (delivery method, date, time slot).
