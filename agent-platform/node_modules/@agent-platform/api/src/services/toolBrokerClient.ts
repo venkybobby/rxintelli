@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { hashToBucket } from '@agent-platform/shared';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { evaluateRules } from './rulesEngine.js';
 import type {
   EligibilityResult,

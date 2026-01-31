@@ -2,6 +2,9 @@ import { Router, Request, Response } from 'express';
 import { isOtelInitialized } from '@agent-platform/shared';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 
