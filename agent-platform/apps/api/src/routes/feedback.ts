@@ -4,7 +4,7 @@ import type { UserFeedbackSubmittedEvent } from '../types/events.js';
 
 const router = Router();
 
-router.post('/', (req: Request, res: Response): void {
+router.post('/', (req: Request, res: Response): void => {
   const tenantId = req.tenant_id;
   if (!tenantId) {
     res.status(400).json({ error: 'missing_tenant_id', message: 'x-tenant-id required' });

@@ -1,13 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 
-declare global {
-  namespace Express {
-    interface Request {
-      tenant_id?: string;
-    }
-  }
-}
-
 /**
  * Extract tenant_id from x-tenant-id header or body. Reject if missing.
  */
